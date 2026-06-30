@@ -1,0 +1,11 @@
+.auth-page {
+  position: relative;
+  min-height: 100vh;
+}
+
+.auth-page-back {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  z-index: 10;
+}
