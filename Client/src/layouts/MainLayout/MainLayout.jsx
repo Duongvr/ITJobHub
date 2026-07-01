@@ -1,16 +1,24 @@
 import React, { useState } from 'react';
 import './MainLayout.css';
 import { Outlet, Link, NavLink } from 'react-router-dom';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 
 const MainLayout = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  const handleLogout = () => {
-    if (window.confirm('Bạn có muốn đăng xuất không?')) {
-      localStorage.removeItem('accessToken');
-      window.location.reload();
-    }
+  const handleLogoutClick = () => {
+    setDropdownOpen(false);
+    setShowLogoutModal(true);
+  };
+
+  const handleConfirmLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.reload();
   };
 
   return (
@@ -48,22 +56,27 @@ const MainLayout = () => {
                     width: '38px',
                     height: '38px',
                     borderRadius: '50%',
-                    backgroundColor: '#0056b3',
+                    backgroundColor: user.avatarUrl ? 'transparent' : '#0056b3',
                     color: 'white',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontWeight: 'bold',
                     cursor: 'pointer',
-                    boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                    boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                    overflow: 'hidden'
                   }}
                 >
-                  U
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    (user.fullName || user.email || 'U').charAt(0).toUpperCase()
+                  )}
                 </div>
                 {dropdownOpen && (
                   <div className="user-dropdown">
                     <Link to="/profile" onClick={() => { setDropdownOpen(false); setMenuOpen(false); }}>Hồ sơ của tôi</Link>
-                    <button onClick={handleLogout} className="logout-btn">Đăng xuất</button>
+                    <button onClick={handleLogoutClick} className="logout-btn">Đăng xuất</button>
                   </div>
                 )}
               </div>
@@ -92,6 +105,17 @@ const MainLayout = () => {
           <p className="footer-copy">&copy; {new Date().getFullYear()} ITJobHub. All rights reserved.</p>
         </div>
       </footer>
+
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleConfirmLogout}
+        title="Đăng xuất"
+        message="Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình không?"
+        confirmText="Đăng xuất"
+        cancelText="Hủy"
+        type="danger"
+      />
     </div>
   );
 };

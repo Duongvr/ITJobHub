@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 import './Auth.css';
+
+const parseJwt = (token) => {
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch (e) {
+    return null;
+  }
+};
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -17,6 +24,135 @@ const Auth = () => {
     confirmPassword: '',
     role: 'CANDIDATE'
   });
+
+  const callbackRef = useRef();
+
+  const handleGoogleLoginCallback = async (response) => {
+    const idToken = response.credential;
+    setLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:9999/api/v1';
+
+    try {
+      const res = await axios.post(`${apiBaseUrl}/auth/google`, {
+        idToken: idToken,
+        role: formData.role
+      });
+
+      setSuccessMsg(res.data.message || 'Đăng nhập bằng Google thành công!');
+
+      // Decode Google ID Token to extract profile details
+      let googleName = '';
+      let googlePicture = '';
+      try {
+        const decoded = parseJwt(idToken);
+        googleName = decoded?.name || '';
+        googlePicture = decoded?.picture || '';
+      } catch (err) {
+        console.error("Lỗi parse JWT:", err);
+      }
+
+      if (res.data?.data?.accessToken) {
+        localStorage.setItem('accessToken', res.data.data.accessToken);
+        localStorage.setItem('token', res.data.data.accessToken);
+      }
+      if (res.data?.data) {
+        localStorage.setItem('user', JSON.stringify({
+          userId: res.data.data.userId,
+          email: res.data.data.email,
+          role: res.data.data.role,
+          accountStatus: res.data.data.accountStatus,
+          fullName: res.data.data.fullName || googleName,
+          avatarUrl: googlePicture
+        }));
+      }
+
+      setTimeout(() => {
+        navigate("/");
+        window.location.reload();
+      }, 1000);
+    } catch (err) {
+      console.error("Lỗi đăng nhập Google:", err);
+      setErrorMsg(err.response?.data?.message || 'Đăng nhập Google thất bại, vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    callbackRef.current = handleGoogleLoginCallback;
+  });
+
+  useEffect(() => {
+    let script = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+    if (!script) {
+      script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    }
+
+    const initializeGoogle = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '422027726676-vg5gu561j1dv1hu19e52f9d12ktmrhs0.apps.googleusercontent.com',
+          callback: (res) => callbackRef.current(res),
+        });
+
+        window.google.accounts.id.renderButton(
+          document.getElementById('googleSignInButton'),
+          {
+            theme: 'outline',
+            size: 'large',
+            width: '320',
+            text: isLogin ? 'signin_with' : 'signup_with',
+            shape: 'rectangular',
+          }
+        );
+      }
+    };
+
+    if (window.google) {
+      initializeGoogle();
+    } else {
+      script.addEventListener('load', initializeGoogle);
+    }
+
+    return () => {
+      script.removeEventListener('load', initializeGoogle);
+    };
+  }, [isLogin]);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const userId = urlParams.get('userId');
+    const email = urlParams.get('email');
+    const role = urlParams.get('role');
+    const accountStatus = urlParams.get('accountStatus');
+    const error = urlParams.get('error');
+
+    if (token) {
+      localStorage.setItem('accessToken', token);
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify({ userId, email, role, accountStatus }));
+      
+      setSuccessMsg('Đăng nhập bằng Google thành công!');
+      // Xóa query params trên URL để giao diện đẹp hơn
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      setTimeout(() => {
+        navigate("/");
+        window.location.reload();
+      }, 1000);
+    } else if (error) {
+      setErrorMsg(decodeURIComponent(error));
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [navigate]);
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
@@ -35,59 +171,50 @@ const Auth = () => {
     setSuccessMsg('');
     setLoading(true);
 
+    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:9999/api/v1';
+
     try {
       if (isLogin) {
-        const response = await axios.post('http://localhost:9999/api/v1/auth/login', {
+        const response = await axios.post(`${apiBaseUrl}/auth/login`, {
           email: formData.email,
           password: formData.password
         });
         setSuccessMsg(response.data.message || 'Đăng nhập thành công!');
-        navigate("/");
-        console.log('Login response:', response.data);
         // Lưu token vào localStorage
         if (response.data?.data?.accessToken) {
           localStorage.setItem('accessToken', response.data.data.accessToken);
+          localStorage.setItem('token', response.data.data.accessToken);
         }
+        if (response.data?.data) {
+          localStorage.setItem('user', JSON.stringify({
+            userId: response.data.data.userId,
+            email: response.data.data.email,
+            role: response.data.data.role,
+            accountStatus: response.data.data.accountStatus
+          }));
+        }
+        setTimeout(() => {
+          navigate("/");
+          window.location.reload();
+        }, 1000);
       } else {
         if (formData.password !== formData.confirmPassword) {
           setErrorMsg("Mật khẩu xác nhận không khớp!");
           setLoading(false);
           return;
         }
-        const response = await axios.post('http://localhost:9999/api/v1/auth/register', {
+        const response = await axios.post(`${apiBaseUrl}/auth/register`, {
           fullName: formData.fullName,
           email: formData.email,
           password: formData.password,
           role: formData.role
         });
         setSuccessMsg(response.data.message || 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực.');
-        navigate("/login");
-        console.log('Register response:', response.data);
+        toggleMode();
       }
     } catch (err) {
       console.error("Lỗi gọi API:", err);
       setErrorMsg(err.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      setLoading(true);
-      setErrorMsg('');
-      const response = await axios.post('http://localhost:9999/api/v1/auth/google', {
-        idToken: credentialResponse.credential,
-        role: formData.role // Vai trò mong muốn nếu là lần đầu đăng nhập/đăng ký bằng Google
-      });
-      setSuccessMsg(response.data.message || 'Đăng nhập Google thành công!');
-      if (response.data?.data?.accessToken) {
-        localStorage.setItem('accessToken', response.data.data.accessToken);
-      }
-      navigate("/");
-    } catch (err) {
-      console.error("Lỗi đăng nhập Google:", err);
-      setErrorMsg(err.response?.data?.message || 'Có lỗi xảy ra khi đăng nhập bằng Google.');
     } finally {
       setLoading(false);
     }
@@ -218,16 +345,7 @@ const Auth = () => {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => {
-                  console.error('Đăng nhập Google thất bại');
-                  setErrorMsg('Đăng nhập bằng Google thất bại. Vui lòng thử lại.');
-                }}
-                text={isLogin ? "signin_with" : "signup_with"}
-                width="320"
-                theme="outline"
-              />
+              <div id="googleSignInButton"></div>
             </div>
           </form>
         </div>
