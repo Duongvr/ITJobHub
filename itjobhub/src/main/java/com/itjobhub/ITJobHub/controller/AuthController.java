@@ -1,6 +1,7 @@
 package com.itjobhub.ITJobHub.controller;
 
 import com.itjobhub.ITJobHub.dto.*;
+import com.itjobhub.ITJobHub.dto.auth.*;
 import com.itjobhub.ITJobHub.service.AuthService;
 import com.itjobhub.ITJobHub.service.OtpService;
 import jakarta.validation.Valid;
@@ -49,7 +50,7 @@ public class AuthController {
     }
 
     @PostMapping("/google")
-    public ResponseEntity<ApiResponse<AuthResponse>> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
+    public ResponseEntity<ApiResponse<AuthResponse>> loginWithGoogle(@Valid @RequestBody ApiResponse.GoogleLoginRequest request) {
         AuthResponse response = authService.loginWithGoogle(request);
         return ResponseEntity.ok(ApiResponse.ok("Đăng nhập bằng Google thành công.", response));
     }

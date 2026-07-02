@@ -1,4 +1,4 @@
-package com.itjobhub.ITJobHub.dto;
+package com.itjobhub.ITJobHub.dto.auth;
 
 import com.itjobhub.ITJobHub.entity.User;
 import jakarta.validation.constraints.Email;

@@ -1,4 +1,4 @@
-package com.itjobhub.ITJobHub.dto;
+package com.itjobhub.ITJobHub.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

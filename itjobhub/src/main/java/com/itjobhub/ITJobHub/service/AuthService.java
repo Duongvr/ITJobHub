@@ -2,6 +2,7 @@ package com.itjobhub.ITJobHub.service;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.itjobhub.ITJobHub.dto.*;
+import com.itjobhub.ITJobHub.dto.auth.*;
 import com.itjobhub.ITJobHub.entity.User;
 import com.itjobhub.ITJobHub.exception.AppException;
 import com.itjobhub.ITJobHub.repository.UserRepository;
@@ -99,7 +100,7 @@ public class AuthService {
     // ====================== ĐĂNG NHẬP / ĐĂNG KÝ GOOGLE ======================
 
     @Transactional
-    public AuthResponse loginWithGoogle(GoogleLoginRequest request) {
+    public AuthResponse loginWithGoogle(ApiResponse.GoogleLoginRequest request) {
         GoogleIdToken.Payload payload = googleTokenVerifier.verify(request.getIdToken());
 
         String email = payload.getEmail();
