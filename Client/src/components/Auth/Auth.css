@@ -331,3 +331,107 @@
   color: var(--primary);
   font-weight: 600;
 }
+
+/* ── OTP Verification ── */
+.otp-input-wrapper {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.otp-input-wrapper input {
+  flex: 1.5;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--text-main);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.otp-input-wrapper input:focus {
+  border-color: var(--primary);
+  background: var(--card-bg);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+.otp-resend-btn {
+  flex: 1;
+  background: var(--input-bg);
+  color: var(--primary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  padding: 0 1rem;
+}
+
+.otp-resend-btn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: var(--primary);
+  color: var(--primary-hover);
+}
+
+.otp-resend-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  color: var(--text-muted);
+  border-color: var(--border-color);
+}
+
+.back-to-auth-btn:hover {
+  color: var(--primary) !important;
+}
+
+/* ── Terms Checkbox ── */
+.terms-checkbox-group {
+  margin: 0.5rem 0;
+  display: flex;
+  align-items: center;
+}
+
+.terms-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  user-select: none;
+  line-height: 1.4;
+}
+
+.terms-checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 2px solid var(--border-color);
+  background: var(--input-bg);
+  cursor: pointer;
+  margin-top: 2px;
+  accent-color: var(--primary);
+}
+
+.terms-checkbox-label a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.terms-checkbox-label a:hover {
+  text-decoration: underline;
+}
+
+/* ── Validation Error ── */
+.validation-error {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
+  display: block;
+  text-align: left;
+}
