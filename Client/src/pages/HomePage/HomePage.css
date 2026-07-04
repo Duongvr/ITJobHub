@@ -224,7 +224,20 @@
 
 .category-icon {
   font-size: 2.25rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  background: rgba(99, 102, 241, 0.08);
+  padding: 1rem;
+  border-radius: 14px;
+  transition: all 0.3s ease;
+}
+
+.category-card:hover .category-icon {
+  background: var(--primary);
+  color: white;
 }
 
 .category-card h3 {

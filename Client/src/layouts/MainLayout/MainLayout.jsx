@@ -26,9 +26,13 @@ const MainLayout = () => {
       <header className="navbar">
         <div className="navbar-inner">
           <div className="navbar-brand">
-            <Link to="/">
-              <span className="brand-logo">💼</span>
-              <span className="brand-text">ITJobHub</span>
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <img
+                src="/logo.png"
+                alt="ITJobHub Logo"
+                className="brand-logo-img"
+                style={{ height: '50px', width: '200px' }}
+              />
             </Link>
           </div>
 
@@ -49,8 +53,8 @@ const MainLayout = () => {
             <NavLink to="/about" onClick={() => setMenuOpen(false)}>Giới thiệu</NavLink>
             {localStorage.getItem('accessToken') ? (
               <div className="user-menu-container" style={{ position: 'relative', marginLeft: '15px' }}>
-                <div 
-                  className="user-avatar" 
+                <div
+                  className="user-avatar"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   style={{
                     width: '38px',
@@ -93,9 +97,8 @@ const MainLayout = () => {
 
       <footer className="footer">
         <div className="footer-inner">
-          <div className="footer-brand">
-            <span className="brand-logo">💼</span>
-            <span className="brand-text">ITJobHub</span>
+          <div className="footer-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <img src="/logo.png" alt="ITJobHub Logo" className="brand-logo-img" style={{ height: '28px' }} />
           </div>
           <nav className="footer-links">
             <Link to="/about">About</Link>

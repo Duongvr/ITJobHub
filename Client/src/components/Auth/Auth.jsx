@@ -39,11 +39,15 @@ const Auth = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
   const [touchedFields, setTouchedFields] = useState({
+    fullName: false,
     email: false,
+    password: false,
     confirmPassword: false
   });
   const [validationErrors, setValidationErrors] = useState({
+    fullName: '',
     email: '',
+    password: '',
     confirmPassword: ''
   });
 
@@ -54,27 +58,47 @@ const Auth = () => {
     setOtpCode('');
   }, [formData?.email, forgotEmail]);
 
-  // Validation useEffect for email format and confirm password matching
+  // Validation useEffect for fullName, email, password, and confirm password matching
   useEffect(() => {
-    const errors = { email: '', confirmPassword: '' };
+    const errors = { fullName: '', email: '', password: '', confirmPassword: '' };
+
+    // Full Name validation
+    if (!isLogin) {
+      if (!formData.fullName.trim()) {
+        errors.fullName = formData.role === 'EMPLOYER' ? 'Tên doanh nghiệp không được để trống' : 'Họ và tên không được để trống';
+      }
+    }
 
     // Email validation
-    if (formData.email) {
+    if (!formData.email) {
+      errors.email = 'Vui lòng nhập địa chỉ email!';
+    } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
         errors.email = 'Email không đúng định dạng (VD: example@domain.com)';
       }
     }
 
+    // Password validation
+    if (!isLogin) {
+      if (!formData.password) {
+        errors.password = 'Vui lòng nhập mật khẩu!';
+      } else if (formData.password.length < 6) {
+        errors.password = 'Mật khẩu phải có tối thiểu 6 ký tự!';
+      }
+    }
+
     // Confirm Password validation
     if (!isLogin) {
-      if (formData.confirmPassword && formData.confirmPassword !== formData.password) {
+      if (!formData.confirmPassword) {
+        errors.confirmPassword = 'Vui lòng xác nhận mật khẩu!';
+      } else if (formData.confirmPassword !== formData.password) {
         errors.confirmPassword = 'Mật khẩu xác nhận không khớp!';
       }
     }
 
     setValidationErrors(errors);
-  }, [formData.email, formData.password, formData.confirmPassword, isLogin]);
+  }, [formData.fullName, formData.email, formData.password, formData.confirmPassword, isLogin, formData.role]);
 
   useEffect(() => {
     let timer;
@@ -167,6 +191,10 @@ const Auth = () => {
       setErrorMsg('Vui lòng nhập mật khẩu!');
       return;
     }
+    if (validationErrors.password) {
+      setErrorMsg(validationErrors.password);
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       setErrorMsg('Mật khẩu xác nhận không khớp!');
       return;
@@ -189,6 +217,8 @@ const Auth = () => {
     } catch (err) {
       console.error("Lỗi khi gửi OTP đăng ký:", err);
       if (err.response?.status === 409 || err.response?.data?.message?.includes("tồn tại")) {
+        setValidationErrors(prev => ({ ...prev, email: 'Email đã tồn tại trong hệ thống!' }));
+        setTouchedFields(prev => ({ ...prev, email: true }));
         try {
           const resendResponse = await axios.post(`${apiBaseUrl}/auth/resend-otp`, {
             email: formData.email
@@ -438,7 +468,7 @@ const Auth = () => {
     setForgotPasswordEmail('');
     setNewPassword('');
     setConfirmNewPassword('');
-    setTouchedFields({ email: false, confirmPassword: false });
+    setTouchedFields({ fullName: false, email: false, password: false, confirmPassword: false });
   };
 
   const handleChange = (e) => {
@@ -483,8 +513,18 @@ const Auth = () => {
           setLoading(false);
           return;
         }
+        if (validationErrors.fullName) {
+          setErrorMsg(validationErrors.fullName);
+          setLoading(false);
+          return;
+        }
         if (validationErrors.email) {
           setErrorMsg(validationErrors.email);
+          setLoading(false);
+          return;
+        }
+        if (validationErrors.password) {
+          setErrorMsg(validationErrors.password);
           setLoading(false);
           return;
         }
@@ -773,97 +813,152 @@ const Auth = () => {
               {successMsg && <div className="success-message" style={{ color: 'green', marginBottom: '15px', fontSize: '0.9rem', textAlign: 'center' }}>{successMsg}</div>}
 
               <form className="auth-form" onSubmit={handleSubmit}>
-                {!isLogin && (
-                  <div className="role-selector">
-                    <p>Bạn là:</p>
-                    <div className="role-options">
-                      <label className={`role-option ${formData.role === 'CANDIDATE' ? 'active' : ''}`}>
-                        <input
-                          type="radio"
-                          name="role"
-                          value="CANDIDATE"
-                          checked={formData.role === 'CANDIDATE'}
-                          onChange={handleChange}
-                        />
-                        <span>Ứng viên</span>
-                      </label>
-                      <label className={`role-option ${formData.role === 'EMPLOYER' ? 'active' : ''}`}>
-                        <input
-                          type="radio"
-                          name="role"
-                          value="EMPLOYER"
-                          checked={formData.role === 'EMPLOYER'}
-                          onChange={handleChange}
-                        />
-                        <span>Nhà tuyển dụng</span>
-                      </label>
-                    </div>
-                  </div>
-                )}
-
-                {!isLogin && (
-                  <div className="input-group">
-                    <label htmlFor="fullName">{formData.role === 'EMPLOYER' ? 'Tên doanh nghiệp / Người đại diện' : 'Họ và tên'}</label>
-                    <input
-                      type="text"
-                      id="fullName"
-                      name="fullName"
-                      placeholder={formData.role === 'EMPLOYER' ? 'Công ty TNHH ABC' : 'Nguyễn Văn A'}
-                      value={formData.fullName}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                )}
-
-                <div className="input-group">
-                  <label htmlFor="email">Địa chỉ Email</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder={formData.role === 'EMPLOYER' ? 'Nhập địa chỉ email công ty' : 'Nhập địa chỉ email của bạn'}
-                    value={formData.email}
-                    onChange={handleChange}
-                    onBlur={() => setTouchedFields(prev => ({ ...prev, email: true }))}
-                    required
-                  />
-                  {touchedFields.email && validationErrors.email && (
-                    <span className="validation-error">{validationErrors.email}</span>
-                  )}
-                </div>
-
-                <div className="input-group">
-                  <label htmlFor="password">Mật khẩu</label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    placeholder="••••••••"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                {!isLogin && (
+                {isLogin ? (
                   <>
                     <div className="input-group">
-                      <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
+                      <label htmlFor="email">Địa chỉ Email</label>
                       <input
-                        type="password"
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        placeholder="••••••••"
-                        value={formData.confirmPassword}
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Nhập địa chỉ email của bạn"
+                        value={formData.email}
                         onChange={handleChange}
-                        onBlur={() => setTouchedFields(prev => ({ ...prev, confirmPassword: true }))}
+                        onBlur={() => setTouchedFields(prev => ({ ...prev, email: true }))}
                         required
                       />
-                      {touchedFields.confirmPassword && validationErrors.confirmPassword && (
-                        <span className="validation-error">{validationErrors.confirmPassword}</span>
+                      {touchedFields.email && validationErrors.email && (
+                        <span className="validation-error">{validationErrors.email}</span>
                       )}
                     </div>
+
+                    <div className="input-group">
+                      <label htmlFor="password">Mật khẩu</label>
+                      <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="••••••••"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="forgot-password">
+                      <a href="#" onClick={(e) => {
+                        e.preventDefault();
+                        setIsForgotPassword(true);
+                        setForgotPasswordStep('EMAIL');
+                        setForgotPasswordEmail(formData.email || '');
+                        setErrorMsg('');
+                        setSuccessMsg('');
+                        setOtpCode('');
+                        setNewPassword('');
+                        setConfirmNewPassword('');
+                      }}>Quên mật khẩu?</a>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="role-selector">
+                      <p>Bạn là:</p>
+                      <div className="role-options">
+                        <label className={`role-option ${formData.role === 'CANDIDATE' ? 'active' : ''}`}>
+                          <input
+                            type="radio"
+                            name="role"
+                            value="CANDIDATE"
+                            checked={formData.role === 'CANDIDATE'}
+                            onChange={handleChange}
+                          />
+                          <span>Ứng viên</span>
+                        </label>
+                        <label className={`role-option ${formData.role === 'EMPLOYER' ? 'active' : ''}`}>
+                          <input
+                            type="radio"
+                            name="role"
+                            value="EMPLOYER"
+                            checked={formData.role === 'EMPLOYER'}
+                            onChange={handleChange}
+                          />
+                          <span>Nhà tuyển dụng</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="form-row">
+                      <div className="input-group">
+                        <label htmlFor="fullName">{formData.role === 'EMPLOYER' ? 'Tên doanh nghiệp' : 'Họ và tên'}</label>
+                        <input
+                          type="text"
+                          id="fullName"
+                          name="fullName"
+                          placeholder={formData.role === 'EMPLOYER' ? 'Công ty TNHH ABC' : 'Nguyễn Văn A'}
+                          value={formData.fullName}
+                          onChange={handleChange}
+                          onBlur={() => setTouchedFields(prev => ({ ...prev, fullName: true }))}
+                          required
+                        />
+                        {touchedFields.fullName && validationErrors.fullName && (
+                          <span className="validation-error">{validationErrors.fullName}</span>
+                        )}
+                      </div>
+
+                      <div className="input-group">
+                        <label htmlFor="email">Địa chỉ Email</label>
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          placeholder={formData.role === 'EMPLOYER' ? 'Nhập địa chỉ email công ty' : 'Nhập địa chỉ email của bạn'}
+                          value={formData.email}
+                          onChange={handleChange}
+                          onBlur={() => setTouchedFields(prev => ({ ...prev, email: true }))}
+                          required
+                        />
+                        {touchedFields.email && validationErrors.email && (
+                          <span className="validation-error">{validationErrors.email}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="form-row">
+                      <div className="input-group">
+                        <label htmlFor="password">Mật khẩu</label>
+                        <input
+                          type="password"
+                          id="password"
+                          name="password"
+                          placeholder="••••••••"
+                          value={formData.password}
+                          onChange={handleChange}
+                          onBlur={() => setTouchedFields(prev => ({ ...prev, password: true }))}
+                          required
+                        />
+                        {touchedFields.password && validationErrors.password && (
+                          <span className="validation-error">{validationErrors.password}</span>
+                        )}
+                      </div>
+
+                      <div className="input-group">
+                        <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
+                        <input
+                          type="password"
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          placeholder="••••••••"
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
+                          onBlur={() => setTouchedFields(prev => ({ ...prev, confirmPassword: true }))}
+                          required
+                        />
+                        {touchedFields.confirmPassword && validationErrors.confirmPassword && (
+                          <span className="validation-error">{validationErrors.confirmPassword}</span>
+                        )}
+                      </div>
+                    </div>
+
                     <div className="input-group">
                       <label htmlFor="registerOtp">Mã xác thực OTP</label>
                       <div className="otp-input-wrapper">
@@ -889,6 +984,7 @@ const Auth = () => {
                         </button>
                       </div>
                     </div>
+
                     <div className="terms-checkbox-group">
                       <label className="terms-checkbox-label">
                         <input
@@ -905,22 +1001,6 @@ const Auth = () => {
                       </label>
                     </div>
                   </>
-                )}
-
-                {isLogin && (
-                  <div className="forgot-password">
-                    <a href="#" onClick={(e) => {
-                      e.preventDefault();
-                      setIsForgotPassword(true);
-                      setForgotPasswordStep('EMAIL');
-                      setForgotPasswordEmail(formData.email || '');
-                      setErrorMsg('');
-                      setSuccessMsg('');
-                      setOtpCode('');
-                      setNewPassword('');
-                      setConfirmNewPassword('');
-                    }}>Quên mật khẩu?</a>
-                  </div>
                 )}
 
                 <button type="submit" className="submit-btn" disabled={loading}>

@@ -4,9 +4,8 @@ import './AboutPage.css';
 
 const AboutPage = () => {
   const team = [
-    { emoji: '👨‍💻', name: 'Nguyen Van A', role: 'Founder & CEO' },
-    { emoji: '👩‍💼', name: 'Tran Thi B', role: 'Head of Engineering' },
-    { emoji: '👨‍🎨', name: 'Le Van C', role: 'Lead Designer' },
+    { emoji: '👨‍💻', name: 'Đoàn Đức Dương', role: 'System Design' },
+    { emoji: '👩‍💼', name: 'Tran Thi B', role: 'Backend Developer' },
   ];
 
   return (

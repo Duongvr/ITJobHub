@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout/MainLayout';
 import HomePage from '../pages/HomePage/HomePage';
 import JobsPage from '../pages/JobsPage/JobsPage';
+import JobDetailsPage from '../pages/JobDetailsPage/JobDetailsPage';
 import AboutPage from '../pages/AboutPage/AboutPage';
 import AuthPage from '../pages/AuthPage/AuthPage';
 
@@ -14,6 +15,7 @@ const AppRouter = () => {
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/jobs" element={<JobsPage />} />
+          <Route path="/jobs/:jobId" element={<JobDetailsPage />} />
           <Route path="/about" element={<AboutPage />} />
         </Route>
 
