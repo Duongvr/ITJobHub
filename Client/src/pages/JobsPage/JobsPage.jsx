@@ -67,7 +67,11 @@ const JobsPage = () => {
 
       if (response.data && response.data.data) {
         const pagedData = response.data.data;
-        setJobs(pagedData.content || []);
+        const mappedContent = (pagedData.content || []).map(job => ({
+          ...job,
+          isSaved: job.isSaved !== undefined ? job.isSaved : job.saved
+        }));
+        setJobs(mappedContent);
         setTotalPages(pagedData.totalPages || 0);
         setTotalElements(pagedData.totalElements || 0);
       } else {

@@ -70,3 +70,42 @@ a:hover {
 button {
   font-family: inherit;
 }
+
+/* --- Global Toast Notification --- */
+.toast-notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #10b981;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+  z-index: 9999;
+  font-weight: 600;
+  font-size: 0.875rem;
+  max-width: 350px;
+  animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.toast-notification.error {
+  background: #ef4444;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2);
+}
+
+.toast-notification.info {
+  background: #3b82f6;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
+}
+
+@keyframes toastSlideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

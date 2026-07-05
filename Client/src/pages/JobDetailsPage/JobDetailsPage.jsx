@@ -97,7 +97,7 @@ const JobDetailsPage = () => {
         if (response.data && response.data.data) {
           const jobData = response.data.data;
           setJob(jobData);
-          setSaved(jobData.isSaved);
+          setSaved(jobData.isSaved !== undefined ? jobData.isSaved : jobData.saved);
         } else {
           setError('Công việc không còn tồn tại.');
         }
@@ -180,12 +180,13 @@ const JobDetailsPage = () => {
   if (!job) return null;
 
   // Mock featured and urgent flags in frontend
-  const isFeatured = job.title.toLowerCase().contains?.('senior') ||
-                     job.title.toLowerCase().contains?.('lead') ||
+  const titleLower = (job.title || '').toLowerCase();
+  const isFeatured = titleLower.includes('senior') ||
+                     titleLower.includes('lead') ||
                      (job.salary && (job.salary.includes('3,') || job.salary.includes('4,')));
 
-  const isUrgent = job.title.toLowerCase().contains?.('react') ||
-                   job.title.toLowerCase().contains?.('devops') ||
+  const isUrgent = titleLower.includes('react') ||
+                   titleLower.includes('devops') ||
                    (job.postedDate && new Date(job.postedDate) > new Date(Date.now() - 5 * 24 * 60 * 60 * 1000));
 
   const formatJobType = (type) => {

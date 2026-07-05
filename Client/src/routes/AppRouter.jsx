@@ -6,6 +6,7 @@ import JobsPage from '../pages/JobsPage/JobsPage';
 import JobDetailsPage from '../pages/JobDetailsPage/JobDetailsPage';
 import AboutPage from '../pages/AboutPage/AboutPage';
 import AuthPage from '../pages/AuthPage/AuthPage';
+import ProfilePage from '../pages/ProfilePage/ProfilePage';
 
 const AppRouter = () => {
   return (
@@ -17,6 +18,7 @@ const AppRouter = () => {
           <Route path="/jobs" element={<JobsPage />} />
           <Route path="/jobs/:jobId" element={<JobDetailsPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
 
         {/* Auth page – standalone (no Navbar/Footer) */}

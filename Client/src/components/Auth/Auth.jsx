@@ -975,7 +975,7 @@ const Auth = () => {
                         <button
                           type="button"
                           className="otp-resend-btn"
-                          onClick={handleSendRegisterOtp}
+                          onClick={hasSentOtpOnce ? handleResendOtp : handleSendRegisterOtp}
                           disabled={loading || countdown > 0}
                         >
                           {countdown > 0
